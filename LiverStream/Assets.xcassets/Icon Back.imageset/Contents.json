@@ -1,0 +1,23 @@
+{
+  "images" : [
+    {
+      "filename" : "fluent-emoji_ringed-planet.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "fluent-emoji_ringed-planet@2x.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "fluent-emoji_ringed-planet@3x.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
