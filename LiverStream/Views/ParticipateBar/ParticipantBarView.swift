@@ -57,6 +57,14 @@ class ParticipantBarView: UIView {
             stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
     }
+
+    func setDelegate(_ delegate: CommentBoxViewDelegate) {
+        commentBoxView.setDelegate(delegate)
+    }
+
+    func backgroundTapped() {
+        commentBoxView.backgroundTapped()
+    }
 }
 
 

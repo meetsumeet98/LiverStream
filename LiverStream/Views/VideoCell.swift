@@ -1,7 +1,22 @@
 import UIKit
 import AVFoundation
 
-class VideoCell: UICollectionViewCell {
+class VideoCell: UICollectionViewCell, CommentBoxViewDelegate {
+
+    func  commentBoxDidBeginEditing(keyboardFrameHeight: CGFloat, animationDuration: TimeInterval) {
+        UIView.animate(withDuration: animationDuration) {
+            self.bottomSectionViewBottomConstraint?.constant = -keyboardFrameHeight
+            self.layoutIfNeeded()
+        }
+    }
+    
+    func commentBoxDidEndEditing(animationDuration: TimeInterval) {
+        UIView.animate(withDuration: animationDuration) {
+            self.bottomSectionViewBottomConstraint?.constant = 0
+            self.layoutIfNeeded()
+        }
+    }
+    
     static let identifier = "VideoCell"
 
     private var playerLayer: AVPlayerLayer?
@@ -9,6 +24,8 @@ class VideoCell: UICollectionViewCell {
 
     private let topSectionView = TopSectionView()
     private let bottomSectionView = BottomSectionView()
+
+    private var bottomSectionViewBottomConstraint: NSLayoutConstraint?
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -19,6 +36,8 @@ class VideoCell: UICollectionViewCell {
 
         setupViewHierarchy()
         setupConstraints()
+        bottomSectionView.setDelegate(self)
+        setupBackgroundTapHandler()
     }
 
     func setupViewHierarchy() {
@@ -30,13 +49,16 @@ class VideoCell: UICollectionViewCell {
         topSectionView.translatesAutoresizingMaskIntoConstraints = false
         bottomSectionView.translatesAutoresizingMaskIntoConstraints = false
 
+        let bottomSectionViewBottomConstraint = bottomSectionView.bottomAnchor.constraint(equalTo: bottomAnchor)
+        self.bottomSectionViewBottomConstraint = bottomSectionViewBottomConstraint
+
         NSLayoutConstraint.activate([
             topSectionView.topAnchor.constraint(equalTo: topAnchor),
             topSectionView.leadingAnchor.constraint(equalTo: leadingAnchor),
             topSectionView.trailingAnchor.constraint(equalTo: trailingAnchor),
             topSectionView.heightAnchor.constraint(equalToConstant: 153),
 
-            bottomSectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            bottomSectionViewBottomConstraint,
             bottomSectionView.leadingAnchor.constraint(equalTo: leadingAnchor),
             bottomSectionView.trailingAnchor.constraint(equalTo: trailingAnchor),
             bottomSectionView.heightAnchor.constraint(equalToConstant: 333),
@@ -63,8 +85,6 @@ class VideoCell: UICollectionViewCell {
         }
     }
 
-
-
     @objc private func restartVideo() {
         player?.seek(to: .zero)
         player?.play()
@@ -81,5 +101,15 @@ class VideoCell: UICollectionViewCell {
         player = nil
         playerLayer?.removeFromSuperlayer()
         playerLayer = nil
+    }
+
+    func setupBackgroundTapHandler() {
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(backgroundTapped))
+        self.contentView.addGestureRecognizer(tapGestureRecognizer)
+    }
+
+    @objc
+    func backgroundTapped() {
+        bottomSectionView.backgroundTapped()
     }
 }

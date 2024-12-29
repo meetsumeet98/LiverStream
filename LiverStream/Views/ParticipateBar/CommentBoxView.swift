@@ -1,6 +1,13 @@
 import UIKit
 
-class CommentBoxView: UIView {
+protocol CommentBoxViewDelegate: AnyObject {
+    func commentBoxDidBeginEditing(keyboardFrameHeight: CGFloat, animationDuration: TimeInterval)
+    func commentBoxDidEndEditing(animationDuration: TimeInterval)
+}
+
+class CommentBoxView: UIView, UITextFieldDelegate {
+
+    weak var delegate: CommentBoxViewDelegate?
 
     private let commentTextField: UITextField = {
         let textField = UITextField()
@@ -27,12 +34,58 @@ class CommentBoxView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        commentTextField.delegate = self
+        commentTextField.returnKeyType = .send
         setupUI()
+        setupKeyboardNotifications()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+        commentTextField.delegate = self
         setupUI()
+        setupKeyboardNotifications()
+    }
+
+    private func setupKeyboardNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow(_:)),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide(_:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+    }
+
+    @objc private func keyboardWillShow(_ notification: Notification) {
+        guard commentTextField.isFirstResponder,
+              let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+              let animationDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else {
+            return
+        }
+
+        delegate?.commentBoxDidBeginEditing(keyboardFrameHeight: keyboardFrame.height, animationDuration: animationDuration)
+    }
+
+    @objc private func keyboardWillHide(_ notification: Notification) {
+        guard let animationDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else {
+            return
+        }
+
+        delegate?.commentBoxDidEndEditing(animationDuration: animationDuration)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    func setDelegate(_ delegate: CommentBoxViewDelegate) {
+        self.delegate = delegate
     }
 
     private func setupUI() {
@@ -57,6 +110,18 @@ class CommentBoxView: UIView {
             smileyIcon.widthAnchor.constraint(equalToConstant: 18),
             smileyIcon.heightAnchor.constraint(equalToConstant: 18),
         ])
+    }
+
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        commentTextField.becomeFirstResponder()
+    }
+
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        commentTextField.resignFirstResponder()
+    }
+
+    func backgroundTapped() {
+        commentTextField.resignFirstResponder()
     }
 }
 

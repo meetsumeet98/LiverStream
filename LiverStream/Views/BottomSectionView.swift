@@ -85,4 +85,12 @@ class BottomSectionView: UIView {
     func startAutoScroll() {
         commentsContainerView.startAutoScroll()
     }
+
+    func setDelegate(_ delegate: CommentBoxViewDelegate) {
+        participantBarView.setDelegate(delegate)
+    }
+
+    func backgroundTapped() {
+        participantBarView.backgroundTapped()
+    }
 }
