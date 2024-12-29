@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "fluent-emoji_ringed-planet.png",
+      "filename" : "Icon Back.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "fluent-emoji_ringed-planet@2x.png",
+      "filename" : "Icon Back@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "fluent-emoji_ringed-planet@3x.png",
+      "filename" : "Icon Back@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

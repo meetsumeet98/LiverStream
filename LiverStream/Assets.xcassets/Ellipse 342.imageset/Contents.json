@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "noto_rose.png",
+      "filename" : "Ellipse 342.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "noto_rose@2x.png",
+      "filename" : "Ellipse 342@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "noto_rose@3x.png",
+      "filename" : "Ellipse 342@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

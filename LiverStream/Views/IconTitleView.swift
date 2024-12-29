@@ -1,6 +1,7 @@
 import UIKit
 
 class IconTitleView: UIView {
+
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var iconImageView: UIImageView!
     @IBOutlet weak var stackview: UIStackView!
@@ -8,12 +9,16 @@ class IconTitleView: UIView {
     private let stackviewMargins: UIEdgeInsets
     private let iconToTitleSpacing: CGFloat
     private let iconSize: CGSize
+    private let icon: UIImage?
+    private let title: String
 
     init(icon: UIImage?,
          title: String,
          iconSize: CGSize,
          iconToTitleSpacing: CGFloat = 3,
          padding: UIEdgeInsets = UIEdgeInsets(top: 2, left: 4, bottom: 2, right: 4)) {
+        self.title = title
+        self.icon = icon
         stackviewMargins = padding
         self.iconToTitleSpacing = iconToTitleSpacing
         self.iconSize = iconSize
@@ -22,6 +27,8 @@ class IconTitleView: UIView {
     }
 
     internal required init?(coder: NSCoder) {
+        title = ""
+        icon = nil
         stackviewMargins = .zero
         self.iconToTitleSpacing = 0
         iconSize = .zero
@@ -35,12 +42,6 @@ class IconTitleView: UIView {
             return
         }
 
-//        iconImageView.image = UIImage(named: "star-comment-alt_9291731 3")
-//        titleLabel.text = "Cooking"
-
-//                iconImageView.image = UIImage(named: "noto_star")
-//                titleLabel.text = "Popular Live"
-
         let iconWidthConstraint = iconImageView.widthAnchor.constraint(equalToConstant: iconSize.width)
         let iconHeightConstraint = iconImageView.heightAnchor.constraint(equalToConstant: iconSize.height)
         [iconWidthConstraint, iconHeightConstraint].forEach {
@@ -48,8 +49,8 @@ class IconTitleView: UIView {
             $0.isActive = true
         }
 
-        iconImageView.image = UIImage(named: "mynaui_user-solid")
-        titleLabel.text = "84"
+        iconImageView.image = icon
+        titleLabel.text = title
         stackview.spacing = iconToTitleSpacing
         stackview.isLayoutMarginsRelativeArrangement = true
         stackview.layoutMargins = stackviewMargins
