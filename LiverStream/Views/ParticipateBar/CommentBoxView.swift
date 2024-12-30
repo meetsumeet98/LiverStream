@@ -3,6 +3,7 @@ import UIKit
 protocol CommentBoxViewDelegate: AnyObject {
     func commentBoxDidBeginEditing(keyboardFrameHeight: CGFloat, animationDuration: TimeInterval)
     func commentBoxDidEndEditing(animationDuration: TimeInterval)
+    func addComment(_ comment: Comment)
 }
 
 class CommentBoxView: UIView, UITextFieldDelegate {
@@ -122,6 +123,25 @@ class CommentBoxView: UIView, UITextFieldDelegate {
 
     func backgroundTapped() {
         commentTextField.resignFirstResponder()
+    }
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        // Dismiss the keyboard
+        textField.resignFirstResponder()
+
+        guard let commentText = textField.text, !commentText.isEmpty else {
+            return false
+        }
+
+        textField.text = ""
+        let comment = Comment(
+            id: 51,
+            username: "Sumeet Bhujang",
+            picURL: "https://fastly.picsum.photos/id/212/200/200.jpg?hmac=U4JUx4PJyTuKdZEPAk2Cw01YZM8rOypF8fTTO39POko",
+            comment: commentText)
+
+        delegate?.addComment(comment)
+        return true
     }
 }
 

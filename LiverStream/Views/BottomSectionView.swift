@@ -4,7 +4,7 @@ class BottomSectionView: UIView {
 
     private let gradientLayer = CAGradientLayer()
     private let participantBarView = ParticipantBarView()
-    private let commentsContainerView = CommentsView()
+    private let commentsContainerView = CommentsContainerView()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -92,5 +92,9 @@ class BottomSectionView: UIView {
 
     func backgroundTapped() {
         participantBarView.backgroundTapped()
+    }
+
+    func addComment(_ comment: Comment) {
+        commentsContainerView.addComment(comment)
     }
 }

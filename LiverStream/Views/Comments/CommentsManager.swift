@@ -1,29 +1,12 @@
 import UIKit
 
-class CommentsView: UIView, UITableViewDataSource {
+class CommentsManager: NSObject, UITableViewDataSource {
+
     private var comments: [Comment] = []
+    let commentsTableView: UITableView
 
-    private let commentsTableView: UITableView = {
-        let tableView = UITableView()
-        tableView.backgroundColor = .clear
-        tableView.separatorStyle = .none
-        tableView.showsVerticalScrollIndicator = false
-        tableView.isUserInteractionEnabled = false // Disable interactions
-        return tableView
-    }()
-
-    private func setupCommentsTableView() {
-        commentsTableView.dataSource = self
-        commentsTableView.register(CommentTableViewCell.self, forCellReuseIdentifier: CommentTableViewCell.identifier)
-        commentsTableView.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(commentsTableView)
-
-        NSLayoutConstraint.activate([
-            commentsTableView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
-            commentsTableView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
-            commentsTableView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -100),
-            commentsTableView.heightAnchor.constraint(equalToConstant: 200)
-        ])
+    init(withCommentsTableView commentsTableView: UITableView) {
+        self.commentsTableView = commentsTableView
     }
 
     private var timer: Timer?
@@ -34,15 +17,6 @@ class CommentsView: UIView, UITableViewDataSource {
         timer?.invalidate() // Stop the timer
     }
 
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupCommentsTableView()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
     func loadComments() {
         guard let url = Bundle.main.url(forResource: "comments", withExtension: "json") else {
             print("Failed to locate JSON file.")
@@ -82,6 +56,20 @@ class CommentsView: UIView, UITableViewDataSource {
         }
     }
 
+    func addComment(_ comment: Comment) {
+        // Update the data source
+        comments.append(comment)
+
+        // Calculate the index path for the new comment
+        let newIndexPath = IndexPath(row: comments.count - 1, section: 0)
+
+        // Insert the new row into the table view
+        commentsTableView.insertRows(at: [newIndexPath], with: .automatic)
+
+        // Optionally scroll to the new comment
+        commentsTableView.scrollToRow(at: newIndexPath, at: .bottom, animated: true)
+    }
+
     // MARK: -  UITableViewDataSource
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -96,4 +84,3 @@ class CommentsView: UIView, UITableViewDataSource {
         return cell
     }
 }
-

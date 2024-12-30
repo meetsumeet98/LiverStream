@@ -112,4 +112,8 @@ class VideoCell: UICollectionViewCell, CommentBoxViewDelegate {
     func backgroundTapped() {
         bottomSectionView.backgroundTapped()
     }
+
+    func addComment(_ comment: Comment) {
+        bottomSectionView.addComment(comment)
+    }
 }
