@@ -1,9 +1,15 @@
 import UIKit
 
-class CommentsManager: NSObject, UITableViewDataSource {
+protocol CommentsManagerDelegate: NSObjectProtocol {
+    func scrollViewDidScroll()
+}
+
+class CommentsManager: NSObject, UITableViewDataSource, UITableViewDelegate {
 
     private var comments: [Comment] = []
     let commentsTableView: UITableView
+
+    weak var delegate: CommentsManagerDelegate?
 
     init(withCommentsTableView commentsTableView: UITableView) {
         self.commentsTableView = commentsTableView
@@ -82,5 +88,9 @@ class CommentsManager: NSObject, UITableViewDataSource {
         }
         cell.configure(with: comments[indexPath.row])
         return cell
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        delegate?.scrollViewDidScroll()
     }
 }

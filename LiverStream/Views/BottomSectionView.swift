@@ -34,14 +34,14 @@ class BottomSectionView: UIView {
         commentsContainerView.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-        commentsContainerView.topAnchor.constraint(equalTo: topAnchor),
-        commentsContainerView.leadingAnchor.constraint(equalTo: leadingAnchor),
-        commentsContainerView.bottomAnchor.constraint(equalTo: bottomAnchor),
-        commentsContainerView.trailingAnchor.constraint(equalTo: participantBarView.commentBoxView.trailingAnchor),
+            commentsContainerView.topAnchor.constraint(equalTo: topAnchor),
+            commentsContainerView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            commentsContainerView.bottomAnchor.constraint(equalTo: participantBarView.topAnchor),
+            commentsContainerView.trailingAnchor.constraint(equalTo: participantBarView.commentBoxView.trailingAnchor),
 
-        participantBarView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 13),
-        participantBarView.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -34),
-        participantBarView.trailingAnchor.constraint(equalTo: trailingAnchor)
+            participantBarView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 13),
+            participantBarView.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor),
+            participantBarView.trailingAnchor.constraint(equalTo: trailingAnchor)
         ])
     }
 

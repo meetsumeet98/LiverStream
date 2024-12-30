@@ -1,5 +1,6 @@
 import UIKit
 import AVFoundation
+import Lottie
 
 class VideoCell: UICollectionViewCell, CommentBoxViewDelegate {
 
@@ -16,7 +17,16 @@ class VideoCell: UICollectionViewCell, CommentBoxViewDelegate {
             self.layoutIfNeeded()
         }
     }
-    
+
+    private lazy var floatingHeartAnimationView: LottieAnimationView = {
+        let animationView = LottieAnimationView(name: "floating-heart-animation")
+        animationView.contentMode = .scaleAspectFit
+        animationView.loopMode = .playOnce
+        animationView.translatesAutoresizingMaskIntoConstraints = false
+        animationView.alpha = 0
+        return animationView
+    }()
+
     static let identifier = "VideoCell"
 
     private var playerLayer: AVPlayerLayer?
@@ -37,31 +47,35 @@ class VideoCell: UICollectionViewCell, CommentBoxViewDelegate {
         setupViewHierarchy()
         setupConstraints()
         bottomSectionView.setDelegate(self)
-        setupBackgroundTapHandler()
+        setupTapHandlers()
     }
 
     func setupViewHierarchy() {
         contentView.addSubview(topSectionView)
         contentView.addSubview(bottomSectionView)
+        contentView.addSubview(floatingHeartAnimationView)
     }
 
     func setupConstraints() {
         topSectionView.translatesAutoresizingMaskIntoConstraints = false
         bottomSectionView.translatesAutoresizingMaskIntoConstraints = false
 
-        let bottomSectionViewBottomConstraint = bottomSectionView.bottomAnchor.constraint(equalTo: bottomAnchor)
+        let bottomSectionViewBottomConstraint = bottomSectionView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         self.bottomSectionViewBottomConstraint = bottomSectionViewBottomConstraint
 
         NSLayoutConstraint.activate([
-            topSectionView.topAnchor.constraint(equalTo: topAnchor),
-            topSectionView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            topSectionView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            topSectionView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            topSectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            topSectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             topSectionView.heightAnchor.constraint(equalToConstant: 153),
 
             bottomSectionViewBottomConstraint,
-            bottomSectionView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            bottomSectionView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            bottomSectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            bottomSectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             bottomSectionView.heightAnchor.constraint(equalToConstant: 333),
+
+            floatingHeartAnimationView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            floatingHeartAnimationView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
         ])
     }
     
@@ -103,9 +117,29 @@ class VideoCell: UICollectionViewCell, CommentBoxViewDelegate {
         playerLayer = nil
     }
 
-    func setupBackgroundTapHandler() {
-        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(backgroundTapped))
-        self.contentView.addGestureRecognizer(tapGestureRecognizer)
+    func setupTapHandlers() {
+        // Single Tap
+        let singleTapGesture = UITapGestureRecognizer(target: self, action: #selector(backgroundTapped))
+        singleTapGesture.numberOfTapsRequired = 1
+        self.contentView.addGestureRecognizer(singleTapGesture)
+
+        // Double Tap
+        let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap))
+        doubleTapGesture.numberOfTapsRequired = 2
+        self.contentView.addGestureRecognizer(doubleTapGesture)
+
+        // Ensure single tap is recognized only if double tap fails
+        singleTapGesture.require(toFail: doubleTapGesture)
+    }
+
+    @objc func handleDoubleTap() {
+        floatingHeartAnimationView.alpha = 1
+        floatingHeartAnimationView.play { [weak self] _ in
+            // Fade out the animation after playing
+            UIView.animate(withDuration: 0.5) {
+                self?.floatingHeartAnimationView.alpha = 0
+            }
+        }
     }
 
     @objc
