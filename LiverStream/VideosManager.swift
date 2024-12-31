@@ -20,7 +20,6 @@ class VideosManager: NSObject, UICollectionViewDataSource, UICollectionViewDeleg
             DispatchQueue.main.async {
                 switch result {
                 case .success(let videos):
-                    print("#SB - loadVideos: videos.count \(videos.count)")
                     self?.videos = videos
                     self?.videosCollectionView.reloadData()
                 case .failure(let error):
@@ -52,12 +51,10 @@ class VideosManager: NSObject, UICollectionViewDataSource, UICollectionViewDeleg
     // MARK: - UICollectionViewDataSource
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        print("#SB - numberOfItemsInSection videos.count \(videos.count)")
         return videos.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        print("#SB - cellForItemAt indexPath \(indexPath)")
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: VideoCell.identifier, for: indexPath) as? VideoCell else {
             fatalError("Could not dequeue cell")
         }
@@ -66,7 +63,6 @@ class VideosManager: NSObject, UICollectionViewDataSource, UICollectionViewDeleg
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        print("#SB - sizeForItemAt indexPath \(indexPath)")
         return collectionView.bounds.size
     }
 

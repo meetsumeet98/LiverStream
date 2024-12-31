@@ -141,23 +141,12 @@ class TopSectionView: UIView {
     }
 
     private func topSafeAreaHeight() -> CGFloat {
-        // Get the window or root view controller
-        guard let window = UIApplication.shared.windows.first else {
-            return 0 // If no window is found, return 0 as fallback
+        // Get the active window scene
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first else {
+            return 0
         }
 
-        // Get the safe area insets of the window (includes status bar, notch, etc.)
-        let topInset = window.safeAreaInsets.top
-
-        // Alternatively, you can use status bar height for earlier iOS versions (pre-iOS 11)
-        let statusBarHeight: CGFloat
-        if #available(iOS 13.0, *) {
-            statusBarHeight = window.windowScene?.statusBarManager?.statusBarFrame.height ?? 0
-        } else {
-            statusBarHeight = UIApplication.shared.statusBarFrame.height
-        }
-
-        // Return the calculated top area height (sum of status bar and safe area top inset)
-        return max(topInset, statusBarHeight)  // Return the max value of the two (just in case)
+        return window.safeAreaInsets.top
     }
 }
