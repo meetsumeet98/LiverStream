@@ -2,15 +2,21 @@ import UIKit
 
 class IconTitleView: UIView {
 
+    // MARK: - IBOutlet
+
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var iconImageView: UIImageView!
     @IBOutlet weak var stackview: UIStackView!
+
+    // MARK: - Properties
 
     private let stackviewMargins: UIEdgeInsets
     private let iconToTitleSpacing: CGFloat
     private let iconSize: CGSize
     private let icon: UIImage?
     private let title: String
+
+    // MARK: - LifeCycle Methods
 
     init(icon: UIImage?,
          title: String,
@@ -35,6 +41,8 @@ class IconTitleView: UIView {
         super.init(coder: coder)
     }
 
+    // MARK: - Private Helpers
+    
     private func commonInit() {
         // Load the view from the nib file
         let nib = UINib(nibName: "IconTitleView", bundle: Bundle(for: type(of: self)))

@@ -1,9 +1,11 @@
 import UIKit
 
-class CommentsContainerView: UIView, CommentsManagerDelegate {
-    private let gradientLayer = CAGradientLayer()
+class CommentsContainerView: UIView {
 
-    private let commentsManager: CommentsManager
+    // MARK: - Properties
+
+    private let gradientLayer = CAGradientLayer()
+    let commentsManager: CommentsManager
     private let commentsTableView: UITableView = {
         let tableView = UITableView()
         tableView.backgroundColor = .clear
@@ -13,18 +15,28 @@ class CommentsContainerView: UIView, CommentsManagerDelegate {
         return tableView
     }()
 
+    // MARK: - LifeCycle Methods
+
     override init(frame: CGRect) {
         commentsManager = CommentsManager(withCommentsTableView: commentsTableView)
         super.init(frame: frame)
-        commentsManager.delegate = self
         setupCommentsTableView()
         setupTopMaskView()
     }
 
-
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        gradientLayer.frame = bounds
+
+        // Setting top inset here to give the visual effect that 1st comment comes on screen from the bottom of the tableview
+        commentsTableView.contentInset = UIEdgeInsets(top: commentsTableView.frame.height, left: 0, bottom: 0, right: 0)
+    }
+
+    // MARK: - Private Helpers
 
     private func setupCommentsTableView() {
         commentsTableView.dataSource = commentsManager
@@ -33,51 +45,33 @@ class CommentsContainerView: UIView, CommentsManagerDelegate {
         addSubview(commentsTableView)
 
         NSLayoutConstraint.activate([
-            commentsTableView.bottomAnchor.constraint(equalTo: topAnchor),
+            commentsTableView.topAnchor.constraint(equalTo: topAnchor),
             commentsTableView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
             commentsTableView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
-            commentsTableView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            commentsTableView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12)
         ])
-    }
-
-    func loadComments() {
-        commentsManager.loadComments()
-    }
-
-    func startAutoScroll() {
-        commentsManager.startAutoScroll()
-    }
-
-    func addComment(_ comment: Comment) {
-        commentsManager.addComment(comment)
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        updateGradientLayerFrame()
     }
 
     private func setupTopMaskView() {
         gradientLayer.colors = [
             UIColor.white.withAlphaComponent(0).cgColor, // Fully transparent at the top
-            UIColor.white.withAlphaComponent(0.5).cgColor,
+            UIColor.white.withAlphaComponent(1).cgColor,
         ]
-        gradientLayer.locations = [0.0, 0.2] // Smooth gradient transition
-        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0) // Start from the top-left
-        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)  // End at the bottom-left (vertical fade)
+        gradientLayer.locations = [0.0, 0.2]
+        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
+        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
 
         layer.mask = gradientLayer
     }
 
-    private func updateGradientLayerFrame() {
-        CATransaction.begin()
-        CATransaction.setDisableActions(true) // Disable implicit animations
-        gradientLayer.frame = bounds
-        CATransaction.commit()
+    // MARK: - Internal Methods
+
+    func loadComments() {
+        commentsManager.loadComments()
     }
 
-    func scrollViewDidScroll() {
-        updateGradientLayerFrame()
+    func addCommentAndScroll(_ comment: Comment) {
+        commentsManager.addCommentAndScroll(comment)
     }
 }
 

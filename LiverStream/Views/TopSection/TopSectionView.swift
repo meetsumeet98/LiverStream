@@ -2,6 +2,8 @@ import UIKit
 
 class TopSectionView: UIView {
 
+    // MARK: - Properties
+
     private let topGradientLayer = CAGradientLayer()
     private let cookingIconTitleView = IconTitleView(
         icon: UIImage(named: "star"),
@@ -38,8 +40,9 @@ class TopSectionView: UIView {
     }()
 
     private let topControlsStackView = TopControlsStackView()
-
     private let roseCountView = RoseCountView()
+
+    // MARK: - Lifecycle Methods
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -58,8 +61,10 @@ class TopSectionView: UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    func setupViewHierarchy() {
+
+    // MARK: - Private Helpers
+
+    private func setupViewHierarchy() {
         layer.addSublayer(topGradientLayer)
 
         // Left section
@@ -73,7 +78,7 @@ class TopSectionView: UIView {
         addSubview(roseCountView)
     }
 
-    func setupViewLayout() {
+    private func setupViewLayout() {
         [actorView, cookingIconTitleView, popularLiveIconTitleView, topControlsStackView, exploreView, roseCountView].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
         }
@@ -99,7 +104,7 @@ class TopSectionView: UIView {
         ])
     }
 
-    func applyCornerRadiusToExploreView() {
+    private func applyCornerRadiusToExploreView() {
         // Need to force layout to be sure that exploreView.bounds are correct
         setNeedsLayout()
         layoutIfNeeded()
@@ -119,7 +124,7 @@ class TopSectionView: UIView {
         exploreView.layer.mask = mask
     }
 
-    func setupGradient() {
+    private func setupGradient() {
         // Set up the top gradient (50% -> 20% -> 0% opacity)
         let topGradientColors = [
             UIColor.black.withAlphaComponent(0.5).cgColor,   // #000000 at 50% opacity
@@ -129,14 +134,13 @@ class TopSectionView: UIView {
         configureGradientLayer(topGradientLayer, with: topGradientColors)
     }
 
-    // Function to add gradient to a view
-    func configureGradientLayer(_ gradientLayer: CAGradientLayer, with colors: [CGColor]) {
+    private func configureGradientLayer(_ gradientLayer: CAGradientLayer, with colors: [CGColor]) {
         gradientLayer.colors = colors
         gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)   // Start from top
         gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)     // End at bottom
     }
 
-    func topSafeAreaHeight() -> CGFloat {
+    private func topSafeAreaHeight() -> CGFloat {
         // Get the window or root view controller
         guard let window = UIApplication.shared.windows.first else {
             return 0 // If no window is found, return 0 as fallback

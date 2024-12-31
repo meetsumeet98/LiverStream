@@ -1,6 +1,14 @@
 import UIKit
 
 class RoseCountView: UIView {
+
+    // MARK: - @IBOutlets
+
+    @IBOutlet weak var roseCountLabel: UILabel!
+    @IBOutlet weak var timerTextView: UITextView!
+
+    // MARK: - LifeCycle Methods
+
     internal required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
@@ -10,8 +18,15 @@ class RoseCountView: UIView {
         commonInit()
     }
 
-    @IBOutlet weak var roseCountLabel: UILabel!
-    @IBOutlet weak var timerTextView: UITextView!
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        timerTextView.layer.cornerRadius = 4
+        timerTextView.textContainerInset = UIEdgeInsets(top: 0, left: 2, bottom: 0, right: 2)
+        timerTextView.clipsToBounds = true
+    }
+
+    // MARK: - Private Helpers
+
     private func commonInit() {
         // Load the view from the nib file
         let nib = UINib(nibName: "RoseCountView", bundle: Bundle(for: type(of: self)))
@@ -32,7 +47,8 @@ class RoseCountView: UIView {
         ])
     }
 
-    func createAttributedText(for text: String) -> NSAttributedString {
+    // Util method to show the yellow & white colored text in a combined fashion per the design spec
+    private func createAttributedText(for text: String) -> NSAttributedString {
         // Define the full text (e.g., "1/5" or "11/24")
         let fullText = text
 
@@ -55,12 +71,5 @@ class RoseCountView: UIView {
         attributedString.addAttribute(.foregroundColor, value: UIColor.white, range: afterSlashRange)
 
         return attributedString
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        timerTextView.layer.cornerRadius = 4
-        timerTextView.textContainerInset = UIEdgeInsets(top: 0, left: 2, bottom: 0, right: 2)
-        timerTextView.clipsToBounds = true
     }
 }

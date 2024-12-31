@@ -3,13 +3,14 @@ import UIKit
 protocol CommentBoxViewDelegate: AnyObject {
     func commentBoxDidBeginEditing(keyboardFrameHeight: CGFloat, animationDuration: TimeInterval)
     func commentBoxDidEndEditing(animationDuration: TimeInterval)
-    func addComment(_ comment: Comment)
+    func addCommentAndScroll(_ comment: Comment)
 }
 
 class CommentBoxView: UIView, UITextFieldDelegate {
 
-    weak var delegate: CommentBoxViewDelegate?
+    // MARK: - Properties
 
+    private weak var delegate: CommentBoxViewDelegate?
     private let commentTextField: UITextField = {
         let textField = UITextField()
         textField.textColor = .white
@@ -18,7 +19,7 @@ class CommentBoxView: UIView, UITextFieldDelegate {
             string: "Comment",
             attributes: [NSAttributedString.Key.foregroundColor: UIColor.white]
         )
-
+        textField.returnKeyType = .send
         textField.font = UIFont.systemFont(ofSize: 12)
         textField.borderStyle = .none
         textField.translatesAutoresizingMaskIntoConstraints = false
@@ -33,19 +34,59 @@ class CommentBoxView: UIView, UITextFieldDelegate {
         return imageView
     }()
 
+    // MARK: - LifeCycle Methods
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         commentTextField.delegate = self
-        commentTextField.returnKeyType = .send
-        setupUI()
+
+        setupViewHierarchy()
+        setupViewStyle()
+        setupViewLayout()
         setupKeyboardNotifications()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         commentTextField.delegate = self
-        setupUI()
+        setupViewHierarchy()
+        setupViewStyle()
+        setupViewLayout()
         setupKeyboardNotifications()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    // MARK: - Private Helpers
+
+    private func setupViewHierarchy() {
+        addSubview(commentTextField)
+        addSubview(smileyIcon)
+    }
+
+    private func setupViewStyle() {
+        backgroundColor = UIColor(red: 111/255, green: 111/255, blue: 111/255, alpha: 0.4)
+        layer.cornerRadius = 21
+    }
+
+    func setupViewLayout() {
+        translatesAutoresizingMaskIntoConstraints = false
+        // Constraints
+        NSLayoutConstraint.activate([
+            // TextField
+            commentTextField.topAnchor.constraint(equalTo: topAnchor),
+            commentTextField.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 11),
+            commentTextField.trailingAnchor.constraint(equalTo: smileyIcon.leadingAnchor),
+            commentTextField.bottomAnchor.constraint(equalTo: bottomAnchor),
+
+            // Smiley icon
+            smileyIcon.centerYAnchor.constraint(equalTo: commentTextField.centerYAnchor),
+            smileyIcon.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -11),
+            smileyIcon.widthAnchor.constraint(equalToConstant: 18),
+            smileyIcon.heightAnchor.constraint(equalToConstant: 18),
+        ])
     }
 
     private func setupKeyboardNotifications() {
@@ -63,7 +104,10 @@ class CommentBoxView: UIView, UITextFieldDelegate {
         )
     }
 
-    @objc private func keyboardWillShow(_ notification: Notification) {
+    // MARK: - Keyboard Notifications
+
+    @objc
+    private func keyboardWillShow(_ notification: Notification) {
         guard commentTextField.isFirstResponder,
               let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
               let animationDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else {
@@ -73,7 +117,8 @@ class CommentBoxView: UIView, UITextFieldDelegate {
         delegate?.commentBoxDidBeginEditing(keyboardFrameHeight: keyboardFrame.height, animationDuration: animationDuration)
     }
 
-    @objc private func keyboardWillHide(_ notification: Notification) {
+    @objc
+    private func keyboardWillHide(_ notification: Notification) {
         guard let animationDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else {
             return
         }
@@ -81,49 +126,17 @@ class CommentBoxView: UIView, UITextFieldDelegate {
         delegate?.commentBoxDidEndEditing(animationDuration: animationDuration)
     }
 
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
+    // MARK: - Internal Methods
 
     func setDelegate(_ delegate: CommentBoxViewDelegate) {
         self.delegate = delegate
     }
 
-    private func setupUI() {
-        backgroundColor = UIColor(red: 111/255, green: 111/255, blue: 111/255, alpha: 0.4)
-        layer.cornerRadius = 21
-        translatesAutoresizingMaskIntoConstraints = false
-
-        addSubview(commentTextField)
-        addSubview(smileyIcon)
-
-        // Constraints
-        NSLayoutConstraint.activate([
-            // TextField
-            commentTextField.topAnchor.constraint(equalTo: topAnchor),
-            commentTextField.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 11),
-            commentTextField.trailingAnchor.constraint(equalTo: smileyIcon.leadingAnchor),
-            commentTextField.bottomAnchor.constraint(equalTo: bottomAnchor),
-
-            // Smiley icon
-            smileyIcon.centerYAnchor.constraint(equalTo: commentTextField.centerYAnchor),
-            smileyIcon.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -11),
-            smileyIcon.widthAnchor.constraint(equalToConstant: 18),
-            smileyIcon.heightAnchor.constraint(equalToConstant: 18),
-        ])
-    }
-
-    func textFieldDidBeginEditing(_ textField: UITextField) {
-        commentTextField.becomeFirstResponder()
-    }
-
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        commentTextField.resignFirstResponder()
-    }
-
     func backgroundTapped() {
         commentTextField.resignFirstResponder()
     }
+
+    // MARK: - UITextFieldDelegate
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         // Dismiss the keyboard
@@ -134,14 +147,24 @@ class CommentBoxView: UIView, UITextFieldDelegate {
         }
 
         textField.text = ""
+
+        // Dummy hardcoded comment
         let comment = Comment(
             id: 51,
             username: "Sumeet Bhujang",
             picURL: "https://fastly.picsum.photos/id/212/200/200.jpg?hmac=U4JUx4PJyTuKdZEPAk2Cw01YZM8rOypF8fTTO39POko",
             comment: commentText)
 
-        delegate?.addComment(comment)
+        delegate?.addCommentAndScroll(comment)
         return true
+    }
+
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        commentTextField.becomeFirstResponder()
+    }
+
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        commentTextField.resignFirstResponder()
     }
 }
 

@@ -2,20 +2,26 @@ import UIKit
 import AVFoundation
 
 class ViewController: UIViewController {
-    private let videosManager: VideosManager
 
+    // MARK: - Properties
+
+    private let videosManager: VideosManager
     private let collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         layout.minimumLineSpacing = 0
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.contentInsetAdjustmentBehavior = .never
+        collectionView.showsVerticalScrollIndicator = false
 
         return collectionView
     }()
 
+    // MARK: - LifeCycle Methods
+    
     required init?(coder: NSCoder) {
         videosManager = VideosManager(withCollectionView: collectionView)
+        videosManager.loadVideos()
         super.init(coder: coder)
     }
 
@@ -37,7 +43,5 @@ class ViewController: UIViewController {
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
-
-        videosManager.loadVideos()
     }
 }

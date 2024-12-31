@@ -1,6 +1,9 @@
 import UIKit
 
 class TopControlsStackView: UIStackView {
+
+    // MARK: - Properties
+
     private let viewerCountView = IconTitleView(
         icon: UIImage(named: "mynaui_user-solid"),
         title: "84",
@@ -24,6 +27,8 @@ class TopControlsStackView: UIStackView {
         return imageView
     }()
 
+    // MARK: - LifeCycle Methods
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupViewHierarchy()
@@ -34,11 +39,13 @@ class TopControlsStackView: UIStackView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setupViewHierarchy() {
+    // MARK: - Private Helpers
+
+    private func setupViewHierarchy() {
         [viewerCountView, downArrowView, closeIconImageView].forEach { addArrangedSubview($0) }
     }
 
-    func setupViewLayout() {
+    private func setupViewLayout() {
         axis = .horizontal
         spacing = 6
         alignment = .center

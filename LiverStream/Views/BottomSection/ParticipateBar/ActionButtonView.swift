@@ -2,6 +2,8 @@ import UIKit
 
 class ActionButtonView: UIStackView {
 
+    // MARK: - Properties
+
     private let iconImageView = UIImageView()
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -10,6 +12,8 @@ class ActionButtonView: UIStackView {
         label.textColor = .white
         return label
     }()
+
+    // MARK: - LifeCycle Methods
 
     init(iconName: String, title: String) {
         iconImageView.image = UIImage(named: iconName)

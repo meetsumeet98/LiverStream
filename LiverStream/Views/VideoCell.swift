@@ -1,62 +1,74 @@
-import UIKit
 import AVFoundation
-import Lottie
+import UIKit
 
-class VideoCell: UICollectionViewCell, CommentBoxViewDelegate {
+class VideoCell: UICollectionViewCell, UIGestureRecognizerDelegate {
 
-    func  commentBoxDidBeginEditing(keyboardFrameHeight: CGFloat, animationDuration: TimeInterval) {
-        UIView.animate(withDuration: animationDuration) {
-            self.bottomSectionViewBottomConstraint?.constant = -keyboardFrameHeight
-            self.layoutIfNeeded()
-        }
-    }
-    
-    func commentBoxDidEndEditing(animationDuration: TimeInterval) {
-        UIView.animate(withDuration: animationDuration) {
-            self.bottomSectionViewBottomConstraint?.constant = 0
-            self.layoutIfNeeded()
-        }
-    }
-
-    private lazy var floatingHeartAnimationView: LottieAnimationView = {
-        let animationView = LottieAnimationView(name: "floating-heart-animation")
-        animationView.contentMode = .scaleAspectFit
-        animationView.loopMode = .playOnce
-        animationView.translatesAutoresizingMaskIntoConstraints = false
-        animationView.alpha = 0
-        return animationView
-    }()
+    // MARK: - Constants
 
     static let identifier = "VideoCell"
 
+    // MARK: - Properties
+
+    private var isKeyboardShown = false
     private var playerLayer: AVPlayerLayer?
     private var player: AVPlayer?
-
     private let topSectionView = TopSectionView()
     private let bottomSectionView = BottomSectionView()
-
     private var bottomSectionViewBottomConstraint: NSLayoutConstraint?
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    // MARK: - LifeCycle Methods
 
     override init(frame: CGRect) {
         super.init(frame: frame)
 
+        contentView.accessibilityIdentifier = "contentViewAccessibilityID"
+        setupKeyboardNotifications()
         setupViewHierarchy()
         setupConstraints()
         bottomSectionView.setDelegate(self)
         setupTapHandlers()
     }
 
-    func setupViewHierarchy() {
-        contentView.addSubview(topSectionView)
-        contentView.addSubview(bottomSectionView)
-        contentView.addSubview(floatingHeartAnimationView)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
-    func setupConstraints() {
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        player?.pause()
+        player = nil
+        playerLayer?.removeFromSuperlayer()
+        playerLayer = nil
+        bottomSectionView.commentsContainerView.commentsManager.reset()
+    }
+
+    // MARK: - Private Helpers
+
+    private func setupKeyboardNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow(_:)),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide(_:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+    }
+
+    private func setupViewHierarchy() {
+        contentView.addSubview(topSectionView)
+        contentView.addSubview(bottomSectionView)
+    }
+
+    private func setupConstraints() {
         topSectionView.translatesAutoresizingMaskIntoConstraints = false
         bottomSectionView.translatesAutoresizingMaskIntoConstraints = false
 
@@ -73,12 +85,47 @@ class VideoCell: UICollectionViewCell, CommentBoxViewDelegate {
             bottomSectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             bottomSectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             bottomSectionView.heightAnchor.constraint(equalToConstant: 333),
-
-            floatingHeartAnimationView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            floatingHeartAnimationView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
         ])
     }
-    
+
+    @objc
+    private func restartVideo() {
+        player?.seek(to: .zero)
+        player?.play()
+    }
+
+    private func setupTapHandlers() {
+        // Single Tap
+        let singleTapGesture = UITapGestureRecognizer(target: self, action: #selector(backgroundTapped))
+        singleTapGesture.numberOfTapsRequired = 1
+        singleTapGesture.delegate = self
+        contentView.addGestureRecognizer(singleTapGesture)
+
+        // Double Tap
+        let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap))
+        doubleTapGesture.numberOfTapsRequired = 2
+        contentView.addGestureRecognizer(doubleTapGesture)
+
+        // Ensure single tap is recognized only if double tap fails
+        singleTapGesture.require(toFail: doubleTapGesture)
+    }
+
+    @objc
+    private func handleDoubleTap() {
+        bottomSectionView.showFloatingHeartAnimation()
+    }
+
+    @objc
+    private func backgroundTapped() {
+        if isKeyboardShown {
+            bottomSectionView.backgroundTapped()
+        } else {
+            player?.rate == 0 ? player?.play() : player?.pause()
+        }
+    }
+
+    // MARK: - Internal Methods
+
     func configure(with video: Video) {
         // Configure AVPlayer
         if let url = URL(string: video.video) {
@@ -86,6 +133,7 @@ class VideoCell: UICollectionViewCell, CommentBoxViewDelegate {
             player?.actionAtItemEnd = .none
             playerLayer = AVPlayerLayer(player: player)
             playerLayer?.videoGravity = .resizeAspectFill
+            playerLayer?.frame = bounds
             if let playerLayer = playerLayer {
                 contentView.layer.insertSublayer(playerLayer, at: 0)
             }
@@ -95,59 +143,56 @@ class VideoCell: UICollectionViewCell, CommentBoxViewDelegate {
             NotificationCenter.default.addObserver(self, selector: #selector(restartVideo), name: .AVPlayerItemDidPlayToEndTime, object: player?.currentItem)
 
             bottomSectionView.loadComments()
-            bottomSectionView.startAutoScroll()
         }
     }
 
-    @objc private func restartVideo() {
-        player?.seek(to: .zero)
+    // Temoprary logic to play pause the video when the tap is done on the video part and not on the other controls present on the screen.
+    // This logic will be removed once the other controls present on the screen have their own interactions set up.
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        return touch.view?.accessibilityIdentifier == contentView.accessibilityIdentifier || touch.view == bottomSectionView
+    }
+
+    func addCommentAndScroll(_ comment: Comment) {
+        bottomSectionView.addCommentAndScroll(comment)
+    }
+
+    func pauseVideo() {
+        player?.pause()
+    }
+
+    func playVideo() {
         player?.play()
     }
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        playerLayer?.frame = bounds
-    }
+    // MARK: - Keyboard observers
 
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        player?.pause()
-        player = nil
-        playerLayer?.removeFromSuperlayer()
-        playerLayer = nil
-    }
-
-    func setupTapHandlers() {
-        // Single Tap
-        let singleTapGesture = UITapGestureRecognizer(target: self, action: #selector(backgroundTapped))
-        singleTapGesture.numberOfTapsRequired = 1
-        self.contentView.addGestureRecognizer(singleTapGesture)
-
-        // Double Tap
-        let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap))
-        doubleTapGesture.numberOfTapsRequired = 2
-        self.contentView.addGestureRecognizer(doubleTapGesture)
-
-        // Ensure single tap is recognized only if double tap fails
-        singleTapGesture.require(toFail: doubleTapGesture)
-    }
-
-    @objc func handleDoubleTap() {
-        floatingHeartAnimationView.alpha = 1
-        floatingHeartAnimationView.play { [weak self] _ in
-            // Fade out the animation after playing
-            UIView.animate(withDuration: 0.5) {
-                self?.floatingHeartAnimationView.alpha = 0
-            }
-        }
+    @objc
+    private func keyboardWillShow(_ notification: Notification) {
+        isKeyboardShown = true
     }
 
     @objc
-    func backgroundTapped() {
-        bottomSectionView.backgroundTapped()
+    private func keyboardWillHide(_ notification: Notification) {
+        isKeyboardShown = false
+    }
+}
+
+// MARK: - CommentBoxViewDelegate
+
+extension VideoCell: CommentBoxViewDelegate {
+    func  commentBoxDidBeginEditing(keyboardFrameHeight: CGFloat, animationDuration: TimeInterval) {
+        UIView.animate(withDuration: animationDuration) {
+            self.bottomSectionViewBottomConstraint?.constant = -keyboardFrameHeight
+            self.bottomSectionView.addAdditionalPaddingBelowParticipateBar()
+            self.layoutIfNeeded()
+        }
     }
 
-    func addComment(_ comment: Comment) {
-        bottomSectionView.addComment(comment)
+    func commentBoxDidEndEditing(animationDuration: TimeInterval) {
+        UIView.animate(withDuration: animationDuration) {
+            self.bottomSectionViewBottomConstraint?.constant = 0
+            self.bottomSectionView.removeAdditionalPaddingBelowParticipateBar()
+            self.layoutIfNeeded()
+        }
     }
 }

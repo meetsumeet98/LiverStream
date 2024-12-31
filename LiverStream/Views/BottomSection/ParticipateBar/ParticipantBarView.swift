@@ -8,8 +8,10 @@
 import UIKit
 
 class ParticipantBarView: UIView {
-     let commentBoxView = CommentBoxView()
 
+    // MARK: - Properties
+
+    let commentBoxView = CommentBoxView()
     private let roseButton = ActionButtonView(iconName: "noto_rose", title: "Rose")
     private let giftButton = ActionButtonView(iconName: "noto_wrapped-gift", title: "Gift")
     private let shareButton = ActionButtonView(iconName: "Icon Share", title: "2")
@@ -24,17 +26,23 @@ class ParticipantBarView: UIView {
         return stackView
     }()
 
+    // MARK: - LifeCycle Methods
+
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setupUI()
+        setupViewHierarchy()
+        setupViewLayout()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-        setupUI()
+        setupViewHierarchy()
+        setupViewLayout()
     }
 
-    private func setupUI() {
+    // MARK: - Private Helpers
+
+    private func setupViewHierarchy() {
         addSubview(commentBoxView)
 
         stackView.addArrangedSubview(roseButton)
@@ -42,8 +50,9 @@ class ParticipantBarView: UIView {
         stackView.addArrangedSubview(shareButton)
 
         addSubview(stackView)
+    }
 
-        // Constraints
+    private func setupViewLayout() {
         commentBoxView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             commentBoxView.topAnchor.constraint(equalTo: topAnchor),
@@ -56,7 +65,10 @@ class ParticipantBarView: UIView {
             stackView.topAnchor.constraint(equalTo: topAnchor),
             stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
+
     }
+
+    // MARK: - Internal Methods
 
     func setDelegate(_ delegate: CommentBoxViewDelegate) {
         commentBoxView.setDelegate(delegate)
