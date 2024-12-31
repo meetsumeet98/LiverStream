@@ -7,3 +7,5 @@ Demo video showing all the functionalities - https://drive.google.com/file/d/1U2
 - Created the Top Section UI Display username, profilePicURL, viewers, and likes etc. views using XIB
 - Created the Bottom Section UI - comments tableview, comment box, gift icon etc views using programmatic way.
 - Added a functionality that video pauses only when tap is done on video and not when other controls are tapped. 
+
+<img width="350" alt="LIVEr-stream-app-UI" src="https://github.com/user-attachments/assets/68461325-d887-4374-8f5e-2f37c0be3ac0" />
