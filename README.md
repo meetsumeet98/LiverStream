@@ -5,6 +5,8 @@
 ## Project Overview  
 This project demonstrates a custom-built full-screen video player for iOS, designed using **Swift**, **UIKit**, **AVFoundation**, **UICollectionView**, and **UITableView**. The app focuses on providing a seamless user experience with smooth animations, quality UI, and a well-structured codebase.  
 
+Demo video showing all the functionalities - https://drive.google.com/file/d/1U2JWO3lkIuUJ9LmnhDYvfyUqMmnWF8Kr/view?usp=sharing
+
 ## Technologies Used  
 - **Swift**  
 - **UIKit**  
